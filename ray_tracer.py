@@ -1,5 +1,6 @@
 import numpy as np
 from objects import sphere
+import math
 HEIGHT = 400
 WIDTH = 400
 
@@ -26,8 +27,17 @@ def ray_color(cam, D):
     c = np.dot(oc, oc) - my_sphere.radius**2
 
     disc = b**2 - 4 * a * c 
+    if disc >= 0: 
+        t = (-b - math.sqrt(disc)) / (2 * a)
+        P = cam + t*D
 
-    return BG_COLOR if (disc < 0) else my_sphere.color
+        N = (P-my_sphere.center) / np.linalg.norm(P-my_sphere.center)
+
+        Intensity = max(0, np.dot(N,light_dir))
+
+        return np.array(my_sphere.color) * Intensity
+
+    return BG_COLOR 
 
 def main_loop():
     for x in range(WIDTH):
