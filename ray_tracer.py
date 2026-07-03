@@ -1,3 +1,4 @@
+# ray_tracer.py
 import numpy as np
 from objects import sphere
 import math
