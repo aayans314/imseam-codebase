@@ -14,9 +14,20 @@ focal_length = 1
 cam = np.array([0,0,0])
 light_dir = np.array([1,1,1]) / np.linalg.norm(np.array([1,1,1]))
 
-my_sphere = sphere([0,0,-1], 0.5, [255,0,0])
+my_sphere = sphere([0,0,-2], 0.5, [255,0,0])
 
 pixel_values = np.zeros((HEIGHT, WIDTH, 3), dtype = int)
+
+def ray_color(cam, D):
+    oc = cam - my_sphere.center
+    # (O+tD-C)^2 =  R^2 qudratic expansion
+    a = np.dot(D,D)
+    b = 2*np.dot(oc, D)
+    c = np.dot(oc, oc) - my_sphere.radius**2
+
+    disc = b**2 - 4 * a * c 
+
+    return BG_COLOR if (disc < 0) else my_sphere.color
 
 def main_loop():
     for x in range(WIDTH):
@@ -25,15 +36,10 @@ def main_loop():
             v = (vp_height - vp_height/HEIGHT * (y+0.5)) - vp_height / 2
             target = np.array([u,v,-focal_length])
             D = (target - cam) / np.linalg.norm(target - cam)
-            oc = cam - my_sphere.center
-            # (O+tD-C)^2 =  R^2 qudratic expansion
-            a = np.dot(D,D)
-            b = 2*np.dot(oc, D)
-            c = np.dot(oc, oc) - my_sphere.radius**2
-
-            disc = b**2 - 4 * a * c
             
-            pixel_values[y][x] =  BG_COLOR if (disc < 0) else my_sphere.color
+            
+            pixel_values[y][x] = ray_color(cam, D)
+            
 
 def save_image():
     f = open("render.ppm", "w")
@@ -49,6 +55,8 @@ def save_image():
 
             f.write(f"{r} {g} {b}\n")
     f.close()
+
+
 
 main_loop()
 save_image()
