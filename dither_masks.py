@@ -5,6 +5,33 @@ import torch.nn.functional as F
 import os
 import math
 from PIL import Image
+import gdspy
+
+def export_to_gds(arr, gds_path, cell_name):
+    lib = gdspy.GdsLibrary()
+    cell = lib.new_cell(cell_name)
+    rows, cols = arr.shape
+    pixel_size = 10.0 # um
+    
+    for r in range(rows):
+        c = 0
+        while c < cols:
+            if not arr[r, c]: # black / opaque
+                start_c = c
+                while c < cols and not arr[r, c]:
+                    c += 1
+                end_c = c
+                
+                x1 = start_c * pixel_size
+                y1 = (rows - r) * pixel_size
+                x2 = end_c * pixel_size
+                y2 = (rows - r - 1) * pixel_size
+                
+                cell.add(gdspy.Rectangle((x1, y1), (x2, y2)))
+            else:
+                c += 1
+                
+    lib.write_gds(gds_path)
 
 def main():
     print("Initializing Floyd-Steinberg Photomask Dithering Engine...")
@@ -97,6 +124,10 @@ def main():
     print("Exporting finalized binary masks to disk...")
     dithered_img1.save('layer1_photomask_dithered.png')
     dithered_img2.save('layer2_photomask_dithered.png')
+
+    print("Exporting directly to GDSII stream files...")
+    export_to_gds(np.array(dithered_img1), 'layer1.gds', 'LAYER1_MASK')
+    export_to_gds(np.array(dithered_img2), 'layer2.gds', 'LAYER2_MASK')
 
     # --- D. Rendering a Visual Sample ---
     # We will plot a small zoomed-in crop of the mask so the user can actually see the binary dithering pixels
