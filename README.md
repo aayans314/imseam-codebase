@@ -1,0 +1,6 @@
+[](photomask.png)
+[](layer1_photomask_dithered.png)
+[](layer2_photomask_dithered.png)
+[](3d_projection.gif)
+[](compare_math_optics.png)
+[](compare_math_optics_dithered.png)
